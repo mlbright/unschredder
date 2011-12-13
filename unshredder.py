@@ -1,7 +1,8 @@
 import sys
 from PIL import Image
 from fractions import gcd
-from os.path import exists,isfile,normpath
+from os.path import exists,isfile,normpath,basename,join
+import numpy
 
 def sequence(conn, start):
     seq = [start]
@@ -10,13 +11,13 @@ def sequence(conn, start):
     return len(seq), seq
 
 def unshred(path):
-    image = numpy.asarray(PIL.Image.open(path).convert('L'))
+    image = numpy.asarray(Image.open(path).convert('L'))
     diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
-    threshold, width = 1, 0
 
+    threshold, width = 1, 0
     while width < 5 and threshold < 255:
         boundaries = [index+1 for index, d in enumerate(diff) if d > threshold]
-        width = reduce(lambda x, y: fractions.gcd(x, y), boundaries) if boundaries else 0
+        width = reduce(lambda x, y: gcd(x, y), boundaries) if boundaries else 0
         threshold += 1
 
     shreds = range(image.shape[1] / width)
@@ -29,14 +30,13 @@ def unshred(path):
     # What follows is just output.
     # From a data scientist's point of view, new_order contains the solution.
 
-    print len(new_order), new_order
-    source_im = PIL.Image.open('TokyoPanoramaShredded.png')
-    unshredded = PIL.Image.new("RGBA", source_im.size)
+    source_im = Image.open(path)
+    unshredded = Image.new("RGBA", source_im.size)
     for target, shred in enumerate(new_order):
         source = source_im.crop((shred*width, 0, (shred+1)*width, image.shape[1]))
         destination = (target*width, 0)
         unshredded.paste(source, destination)
-    unshredded.save("output.png")
+    unshredded.save(''.join(['reconstituted-',basename(path)]))
 
 def run():
     try:
@@ -45,6 +45,7 @@ def run():
         print "Could not determine image to operate on"
         print "usage: %s <image path>" % (sys.argv[0])
         raise
+    filepath.replace('/$','')
     if not exists(filepath):
         print "Path does not exist: %s" % (filepath)
         raise SystemExit
