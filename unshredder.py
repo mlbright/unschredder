@@ -3,9 +3,18 @@ from PIL import Image
 from fractions import gcd
 from os.path import exists,isfile,normpath,basename,join
 
+def get_pixel(data,width,x,y):
+    return data[y*width + x]
+
+def get_column(data,width,height,index):
+    return [ p for i,p in enumerate(data) if (w / index) == 0 ]
+
+def column_diff(c1,c2):
+    pass
+
 def unshred(path):
     image = Image.open(path).convert('L')
-    x,y = image.size
+    width,height = image.size
     pixels = list(image.getdata())
     
     means = [ for ]
