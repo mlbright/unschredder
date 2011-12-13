@@ -1,5 +1,4 @@
 from PIL import Image
-import ImageOps
 image = Image.open("TokyoPanoramaShredded.png")
 data = list(image.getdata())
 
@@ -56,14 +55,12 @@ for i in range(len(strips)):
 seam = (1,0)
 for i in range(len(sortedstrips)):
     temp = i+1,compare_striptops(sortedstrips[i][0],sortedstrips[i][1])
-    print temp
     if (temp[1] > seam[1]):
         seam = temp
-print seam
+
 for i in range(0,seam[0]):
     temp = sortedstrips.pop(0)
     sortedstrips.append(temp)
-print sortedstrips
        
 # Create a new image of the same size as the original
 # and copy a region into the new image
@@ -77,5 +74,4 @@ for i in range(0,NUMBER_OF_COLUMNS):
     destination_point = (i * shred_width, 0)
     unshredded.paste(source_region, destination_point)
 # Output the new image
-unshredded.save("unshredded.jpg", "JPEG")
-
+unshredded.save("reconstituted-tokyo.jpg", "JPEG")

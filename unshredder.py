@@ -2,16 +2,13 @@ import sys
 from PIL import Image
 from fractions import gcd
 from os.path import exists,isfile,normpath,basename,join
-import numpy
-
-def sequence(conn, start):
-    seq = [start]
-    while conn[seq[0]] not in seq:
-        seq.insert(0, conn[seq[0]])
-    return len(seq), seq
 
 def unshred(path):
-    image = numpy.asarray(Image.open(path).convert('L'))
+    image = Image.open(path).convert('L')
+    x,y = image.size
+    pixels = list(image.getdata())
+    
+    means = [ for ]
     diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
 
     threshold, width = 1, 0
