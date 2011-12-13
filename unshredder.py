@@ -27,9 +27,6 @@ def unshred(path):
     walks = [sequence(neighbours, start) for start in shreds]
     new_order = max(walks)[1]
 
-    # What follows is just output.
-    # From a data scientist's point of view, new_order contains the solution.
-
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
     for target, shred in enumerate(new_order):
