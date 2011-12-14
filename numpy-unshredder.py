@@ -34,4 +34,4 @@ for target, shred in enumerate(new_order):
     source = source_im.crop((shred*width, 0, (shred+1)*width, image.shape[1]))
     destination = (target*width, 0)
     unshredded.paste(source, destination)
-unshredded.save("output.png")
+unshredded.save("reconstituted.png")
