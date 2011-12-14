@@ -2,42 +2,49 @@ import sys
 from PIL import Image
 from fractions import gcd
 from os.path import exists,isfile,normpath,basename,join
+import math
 
-def get_pixel(data,width,x,y):
-    return data[y*width + x]
+SHRED_WIDTH = 32
 
-def get_column(data,width,height,index):
-    return [ p for i,p in enumerate(data) if (w / index) == 0 ]
-
-def column_diff(c1,c2):
-    pass
+def dist(x, y):
+    """euclidean distance between x and y"""
+    if len(x) != len(y):
+        raise ValueError, "vectors must be same length"
+    sum_ = 0
+    for i in range(len(x)):
+        sum_ += (x[i]-y[i])**2
+    return math.sqrt(sum_)
 
 def unshred(path):
     image = Image.open(path).convert('L')
-    width,height = image.size
+    im_width,im_height = image.size
+    #print "w: %d, h: %d" % (im_width,im_height)
     pixels = list(image.getdata())
+    rows = [ pixels[start:start+im_width] for start in range(0,len(pixels),im_width) ]
+    cols = zip(*rows)
     
-    means = [ for ]
-    diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
+    """diff = numpy.diff([numpy.mean(column) for column in image.transpose()])"""
 
+    """
     threshold, width = 1, 0
     while width < 5 and threshold < 255:
         boundaries = [index+1 for index, d in enumerate(diff) if d > threshold]
         width = reduce(lambda x, y: gcd(x, y), boundaries) if boundaries else 0
         threshold += 1
+    """
 
-    shreds = range(image.shape[1] / width)
-    bounds = [(image[:,width*shred], image[:,width*(shred+1)-1]) for shred in shreds]
-    D = [[numpy.linalg.norm(bounds[s2][1] - bounds[s1][0]) if s1 != s2 else numpy.Infinity for s2 in shreds] for s1 in shreds]
-    neighbours = [numpy.argmin(D[shred]) for shred in shreds]
-    walks = [sequence(neighbours, start) for start in shreds]
-    new_order = max(walks)[1]
+    shreds = [ (cols[i*SHRED_WIDTH],cols[((i+1)*SHRED_WIDTH)-1],i) for i in range(im_width/SHRED_WIDTH) ]
+    new_order = [shreds.pop()]
+    while shreds:
+        new_order.append(shreds.pop(min([ (dist(new_order[-1][1],s[0]),i) for i,s in enumerate(shreds) ])[1]))
+        
+    new_order = [shred[2] for shred in new_order]
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
     for target, shred in enumerate(new_order):
-        source = source_im.crop((shred*width, 0, (shred+1)*width, image.shape[1]))
-        destination = (target*width, 0)
+        source = source_im.crop((shred*SHRED_WIDTH,0,(shred+1)*SHRED_WIDTH, im_height))
+        destination = (target*SHRED_WIDTH, 0)
         unshredded.paste(source, destination)
     unshredded.save(''.join(['reconstituted-',basename(path)]))
 

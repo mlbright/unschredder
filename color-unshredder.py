@@ -66,12 +66,13 @@ for i in range(0,seam[0]):
 # and copy a region into the new image
 unshredded = Image.new("RGBA", image.size)
 shred_width = unshredded.size[0]/NUMBER_OF_COLUMNS
-for i in range(0,NUMBER_OF_COLUMNS):
+for i in range(NUMBER_OF_COLUMNS):
     shred_number = sortedstrips[i][0]
     x1, y1 = (shred_width * shred_number)-shred_width, 0
     x2, y2 = x1 + shred_width, height
     source_region = image.crop((x1, y1, x2, y2))
     destination_point = (i * shred_width, 0)
     unshredded.paste(source_region, destination_point)
+
 # Output the new image
 unshredded.save("reconstituted-tokyo.jpg", "JPEG")
