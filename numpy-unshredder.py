@@ -27,7 +27,7 @@ new_order = max(walks)[1]
 # What follows is just output.
 # From a data scientist's point of view, new_order contains the solution.
 
-print len(new_order), new_order
+#print len(new_order), new_order
 source_im = PIL.Image.open('TokyoPanoramaShredded.png')
 unshredded = PIL.Image.new("RGBA", source_im.size)
 for target, shred in enumerate(new_order):
