@@ -7,9 +7,9 @@ from math import sqrt
 SHRED_WIDTH = 32
 
 def norm(x):
-    range_ = max(x) - min(x)
     min_ = min(x)
-    return [ (x[i]-min_)*255 for i in range(len(x)) ]
+    max_ = max(x)
+    return [ (z - min_)*255/(max_ - min_) for z in x ]
         
 
 def dist(x, y):
@@ -18,10 +18,7 @@ def dist(x, y):
         raise ValueError, "vectors must be same length"
     x_n = norm(x)
     y_n = norm(y)
-    sum_ = 0
-    for i in range(len(x)):
-        sum_ += (x_n[i]-y_n[i])**2
-    return sqrt(sum_)
+    return sqrt(sum([ (x_n[i]-y_n[i])**2 for i in range(len(x)) ]))
 
 def unshred(path):
     image = Image.open(path).convert('L')
@@ -42,7 +39,7 @@ def unshred(path):
         threshold += 1
     """
 
-    shreds = [ (cols[i*SHRED_WIDTH],cols[((i+1)*SHRED_WIDTH)-1],i) for i in range(im_width/SHRED_WIDTH) ]
+    shreds = [ (cols[i*SHRED_WIDTH],cols[(i+1)*SHRED_WIDTH-1],i) for i in range(im_width/SHRED_WIDTH) ]
     ordered = [shreds.pop(0)]
     while shreds:
         ordered.append(shreds.pop(min([ (dist(ordered[-1][1],s[0]),i) for i,s in enumerate(shreds) ])[1]))
@@ -54,7 +51,7 @@ def unshred(path):
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
-    for target, shred in enumerate([shred[2] for shred in ordered]):
+    for target, shred in enumerate([s[2] for s in ordered]):
         source = source_im.crop((shred*SHRED_WIDTH,0,(shred+1)*SHRED_WIDTH, im_height))
         destination = (target*SHRED_WIDTH, 0)
         unshredded.paste(source, destination)
