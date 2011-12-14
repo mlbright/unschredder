@@ -9,7 +9,7 @@ SHRED_WIDTH = 32
 def norm(x):
     range_ = max(x) - min(x)
     min_ = min(x)
-    return [ x[i] - min_ for i in range(len(x)) ]
+    return [ (x[i]-min_)*255 for i in range(len(x)) ]
         
 
 def dist(x, y):
@@ -47,8 +47,10 @@ def unshred(path):
     while shreds:
         ordered.append(shreds.pop(min([ (dist(ordered[-1][1],s[0]),i) for i,s in enumerate(shreds) ])[1]))
         
-    seam = max([ (dist(ordered[i][1],ordered[i+1][0]),i+1) for i in range(0,len(ordered)-1) ])[1]
+    """
+    seam = max([ (dist(ordered[i][1],ordered[i+1][0]),i+1) for i in range(len(ordered)-1) ])[1]
     ordered = ordered[seam:] + ordered[:seam]
+    """
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
