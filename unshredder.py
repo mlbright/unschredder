@@ -34,15 +34,16 @@ def unshred(path):
     """
 
     shreds = [ (cols[i*SHRED_WIDTH],cols[((i+1)*SHRED_WIDTH)-1],i) for i in range(im_width/SHRED_WIDTH) ]
-    new_order = [shreds.pop()]
+    ordered = [shreds.pop()]
     while shreds:
-        new_order.append(shreds.pop(min([ (dist(new_order[-1][1],s[0]),i) for i,s in enumerate(shreds) ])[1]))
+        ordered.append(shreds.pop(min([ (dist(ordered[-1][1],s[0]),i) for i,s in enumerate(shreds) ])[1]))
         
-    new_order = [shred[2] for shred in new_order]
+    seam = max([ (dist(ordered[i][1],ordered[i+1][0]),i) for i in range(0,len(ordered)-1) ])[1]
+    ordered = ordered[seam+1:] + ordered[0:seam]
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
-    for target, shred in enumerate(new_order):
+    for target, shred in enumerate([shred[2] for shred in ordered]):
         source = source_im.crop((shred*SHRED_WIDTH,0,(shred+1)*SHRED_WIDTH, im_height))
         destination = (target*SHRED_WIDTH, 0)
         unshredded.paste(source, destination)
