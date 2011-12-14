@@ -2,26 +2,35 @@ import sys
 from PIL import Image
 from fractions import gcd
 from os.path import exists,isfile,normpath,basename,join
-import math
+from math import sqrt
 
 SHRED_WIDTH = 32
+
+def norm(x):
+    range_ = max(x) - min(x)
+    min_ = min(x)
+    return [ x[i] - min_ for i in range(len(x)) ]
+        
 
 def dist(x, y):
     """euclidean distance between x and y"""
     if len(x) != len(y):
         raise ValueError, "vectors must be same length"
+    x_n = norm(x)
+    y_n = norm(y)
     sum_ = 0
     for i in range(len(x)):
-        sum_ += (x[i]-y[i])**2
-    return math.sqrt(sum_)
+        sum_ += (x_n[i]-y_n[i])**2
+    return sqrt(sum_)
 
 def unshred(path):
     image = Image.open(path).convert('L')
     im_width,im_height = image.size
     #print "w: %d, h: %d" % (im_width,im_height)
     pixels = list(image.getdata())
-    rows = [ pixels[start:start+im_width] for start in range(0,len(pixels),im_width) ]
+    rows = [ pixels[row_start:row_start+im_width] for row_start in range(0,len(pixels),im_width) ]
     cols = zip(*rows)
+    print "# of rows: %d, # of columns: %d" % (len(rows),len(cols))
     
     """diff = numpy.diff([numpy.mean(column) for column in image.transpose()])"""
 
