@@ -3,7 +3,6 @@ from PIL import Image
 from fractions import gcd
 from os.path import exists,isfile,normpath,basename,join
 from math import sqrt
-import numpy
 
 SHRED_WIDTH = 32
 
