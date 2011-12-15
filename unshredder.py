@@ -16,8 +16,8 @@ def normalize(x):
 
 def dist(x, y):
     """euclidean distance between x and y"""
-    x = normalize(x)
-    y = normalize(y)
+    #x = normalize(x)
+    #y = normalize(y)
     return sqrt(sum([ (x[i]-y[i])**2 for i in range(len(x)) ]))
 
 def dist2(x,y):
@@ -53,8 +53,8 @@ def unshred(path):
     shreds = range(im_width/SHRED_WIDTH)
     bounds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1) for i in shreds ]
 
-    #D = [ [ dist(cols[bounds[s2][1]],cols[bounds[s1][0]]) if s1 != s2 else sys.maxint for s2 in shreds ] for s1 in shreds ]
-    D = [ [ numpy.linalg.norm( numpy.asarray(cols[bounds[s2][1]]) - numpy.asarray(cols[bounds[s1][0]]) ) if s1 != s2 else numpy.Infinity for s2 in shreds ] for s1 in shreds ]
+    D = [ [ dist(cols[bounds[s2][1]],cols[bounds[s1][0]]) if s1 != s2 else sys.maxint for s2 in shreds ] for s1 in shreds ]
+    #D = [ [ numpy.linalg.norm( numpy.asarray(cols[bounds[s2][1]]) - numpy.asarray(cols[bounds[s1][0]]) ) if s1 != s2 else numpy.Infinity for s2 in shreds ] for s1 in shreds ]
     successors = [ argmin(D[i]) for i in shreds ]
     walks = [ sequence(successors,start) for start in shreds ]
     new_order = max(walks)[1]
