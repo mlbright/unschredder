@@ -3,26 +3,35 @@ from PIL import Image
 from fractions import gcd
 from os.path import exists,isfile,normpath,basename,join
 from math import sqrt
+import numpy
 
 SHRED_WIDTH = 32
 
-def norm(x):
-    min_ = min(x)
+def normalize(x):
     max_ = max(x)
-    return [ (z - min_)*255/(max_ - min_) for z in x ]
+    min_ = min(x)
+    range_ = max_ - min_
+    #return (arr-amin)*255/rng
+    return [ ((v - min_) * 255 / range_) for v in x ]
 
 def dist(x, y):
     """euclidean distance between x and y"""
-    if len(x) != len(y):
-        raise ValueError, "vectors must be same length"
-    return sqrt(sum([ (x[i]-y[i])**2 for i in range(len(x)) ])) / len(x)
+    x = normalize(x)
+    y = normalize(y)
+    return sqrt(sum([ (x[i]-y[i])**2 for i in range(len(x)) ]))
 
-def sequence(succ, start):
+def dist2(x,y):
+    return [ (x[i] - y[i])**2 for i in range(len(x)) ]
+
+def sequence(successors, start):
     seq = [start]
-    while succ[seq[0]] not in seq:
-        seq.insert(0, succ[seq[0]])
+    while successors[seq[0]] not in seq:
+        seq.insert(0, successors[seq[0]])
     return len(seq), seq
 
+def argmin(x):
+    return min([ (v,i) for i,v in enumerate(x) ])[1]
+    
 def unshred(path):
     image = Image.open(path).convert('L')
     im_width,im_height = image.size
@@ -30,7 +39,6 @@ def unshred(path):
     pixels = list(image.getdata())
     rows = [ pixels[row_start:row_start+im_width] for row_start in range(0,len(pixels),im_width) ]
     cols = zip(*rows)
-    print "# of rows: %d, # of columns: %d" % (len(rows),len(cols))
     
     """diff = numpy.diff([numpy.mean(column) for column in image.transpose()])"""
 
@@ -42,24 +50,18 @@ def unshred(path):
         threshold += 1
     """
 
-    shreds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1,i) for i in range(im_width/SHRED_WIDTH) ]
+    shreds = range(im_width/SHRED_WIDTH)
+    bounds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1) for i in shreds ]
 
-    D = [ [ dist(cols[s1[1]],cols[s2[0]]) if s1 != s2 else sys.maxint for s2 in shreds ] for s1 in shreds ]
-    successors = [ min([ (d,i) for i,d in enumerate(D[s]) ])[1] for s in range(len(shreds)) ]
-    walks = [ sequence(successors,start) for start in range(len(shreds)) ]
-        
-    out = [ s for s in max(walks)[1] ]
-
-    print 
-    print out
-    """
-    seam = max([ (dist(ordered[i][1],ordered[i+1][0]),i+1) for i in range(len(ordered)-1) ])[1]
-    ordered = ordered[seam:] + ordered[:seam]
-    """
+    #D = [ [ dist(cols[bounds[s2][1]],cols[bounds[s1][0]]) if s1 != s2 else sys.maxint for s2 in shreds ] for s1 in shreds ]
+    D = [ [ numpy.linalg.norm( numpy.asarray(cols[bounds[s2][1]]) - numpy.asarray(cols[bounds[s1][0]]) ) if s1 != s2 else numpy.Infinity for s2 in shreds ] for s1 in shreds ]
+    successors = [ argmin(D[i]) for i in shreds ]
+    walks = [ sequence(successors,start) for start in shreds ]
+    new_order = max(walks)[1]
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
-    for target, shred in enumerate(out):
+    for target, shred in enumerate(new_order):
         source = source_im.crop((shred*SHRED_WIDTH,0,(shred+1)*SHRED_WIDTH, im_height))
         destination = (target*SHRED_WIDTH, 0)
         unshredded.paste(source, destination)
