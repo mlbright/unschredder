@@ -17,6 +17,12 @@ def dist(x, y):
         raise ValueError, "vectors must be same length"
     return sqrt(sum([ (x[i]-y[i])**2 for i in range(len(x)) ])) / len(x)
 
+def sequence(succ, start):
+    seq = [start]
+    while succ[seq[0]] not in seq:
+        seq.insert(0, succ[seq[0]])
+    return len(seq), seq
+
 def unshred(path):
     image = Image.open(path).convert('L')
     im_width,im_height = image.size
@@ -37,16 +43,12 @@ def unshred(path):
     """
 
     shreds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1,i) for i in range(im_width/SHRED_WIDTH) ]
-    ordered = []
-    ordered.append(shreds.pop())
-    while shreds:
-        candidates = [ (dist(cols[ordered[-1][1]], cols[s[0]]), i, s) for i,s in enumerate(shreds) ]
-        if ordered[-1][2] == 19:
-            print candidates 
-        successor = min(candidates)[1]
-        ordered.append(shreds.pop(successor))
+
+    D = [ [ dist(cols[s1[1]],cols[s2[0]]) if s1 != s2 else sys.maxint for s2 in shreds ] for s1 in shreds ]
+    successors = [ min([ (d,i) for i,d in enumerate(D[s]) ])[1] for s in range(len(shreds)) ]
+    walks = [ sequence(successors,start) for start in range(len(shreds)) ]
         
-    out = [ s[2] for s in ordered ]
+    out = [ s for s in max(walks)[1] ]
 
     print 
     print out
