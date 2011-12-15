@@ -10,15 +10,12 @@ def norm(x):
     min_ = min(x)
     max_ = max(x)
     return [ (z - min_)*255/(max_ - min_) for z in x ]
-        
 
 def dist(x, y):
     """euclidean distance between x and y"""
     if len(x) != len(y):
         raise ValueError, "vectors must be same length"
-    x_n = norm(x)
-    y_n = norm(y)
-    return sqrt(sum([ (x_n[i]-y_n[i])**2 for i in range(len(x)) ]))
+    return sqrt(sum([ (x[i]-y[i])**2 for i in range(len(x)) ])) / len(x)
 
 def unshred(path):
     image = Image.open(path).convert('L')
@@ -39,11 +36,20 @@ def unshred(path):
         threshold += 1
     """
 
-    shreds = [ (cols[i*SHRED_WIDTH],cols[(i+1)*SHRED_WIDTH-1],i) for i in range(im_width/SHRED_WIDTH) ]
-    ordered = [shreds.pop(0)]
+    shreds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1,i) for i in range(im_width/SHRED_WIDTH) ]
+    ordered = []
+    ordered.append(shreds.pop())
     while shreds:
-        ordered.append(shreds.pop(min([ (dist(ordered[-1][1],s[0]),i) for i,s in enumerate(shreds) ])[1]))
+        candidates = [ (dist(cols[ordered[-1][1]], cols[s[0]]), i, s) for i,s in enumerate(shreds) ]
+        if ordered[-1][2] == 19:
+            print candidates 
+        successor = min(candidates)[1]
+        ordered.append(shreds.pop(successor))
         
+    out = [ s[2] for s in ordered ]
+
+    print 
+    print out
     """
     seam = max([ (dist(ordered[i][1],ordered[i+1][0]),i+1) for i in range(len(ordered)-1) ])[1]
     ordered = ordered[seam:] + ordered[:seam]
@@ -51,7 +57,7 @@ def unshred(path):
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
-    for target, shred in enumerate([s[2] for s in ordered]):
+    for target, shred in enumerate(out):
         source = source_im.crop((shred*SHRED_WIDTH,0,(shred+1)*SHRED_WIDTH, im_height))
         destination = (target*SHRED_WIDTH, 0)
         unshredded.paste(source, destination)
