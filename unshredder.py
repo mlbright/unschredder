@@ -19,9 +19,6 @@ def dist(x, y):
     #y = normalize(y)
     return sqrt(sum([ (x[i]-y[i])**2 for i in range(len(x)) ]))
 
-def dist2(x,y):
-    return [ (x[i] - y[i])**2 for i in range(len(x)) ]
-
 def sequence(successors, start):
     seq = [start]
     while successors[seq[0]] not in seq:
@@ -39,9 +36,8 @@ def unshred(path):
     rows = [ pixels[row_start:row_start+im_width] for row_start in range(0,len(pixels),im_width) ]
     cols = zip(*rows)
     
-    """diff = numpy.diff([numpy.mean(column) for column in image.transpose()])"""
-
     """
+    diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
     threshold, width = 1, 0
     while width < 5 and threshold < 255:
         boundaries = [index+1 for index, d in enumerate(diff) if d > threshold]
@@ -52,7 +48,7 @@ def unshred(path):
     shreds = range(im_width/SHRED_WIDTH)
     bounds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1) for i in shreds ]
 
-    D = [ [ dist(cols[bounds[s2][1]],cols[bounds[s1][0]]) if s1 != s2 else sys.maxint for s2 in shreds ] for s1 in shreds ]
+    D = [ [ dist(cols[bounds[s2][1]],cols[bounds[s1][0]]) if s1 != s2 else float(sys.maxint) for s2 in shreds ] for s1 in shreds ]
     #D = [ [ numpy.linalg.norm( numpy.asarray(cols[bounds[s2][1]]) - numpy.asarray(cols[bounds[s1][0]]) ) if s1 != s2 else numpy.Infinity for s2 in shreds ] for s1 in shreds ]
     successors = [ argmin(D[i]) for i in shreds ]
     walks = [ sequence(successors,start) for start in shreds ]
