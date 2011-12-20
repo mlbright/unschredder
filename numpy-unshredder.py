@@ -3,8 +3,6 @@
 
 import PIL.Image, numpy, fractions
 image = numpy.asarray(PIL.Image.open('TokyoPanoramaShredded.png').convert('L'))
-diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
-threshold, width = 1, 0
 
 def sequence(conn, start):
     seq = [start]
@@ -12,6 +10,8 @@ def sequence(conn, start):
         seq.insert(0, conn[seq[0]])
     return len(seq), seq
 
+diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
+threshold, width = 1, 0
 while width < 5 and threshold < 255:
     boundaries = [index+1 for index, d in enumerate(diff) if d > threshold]
     width = reduce(lambda x, y: fractions.gcd(x, y), boundaries) if boundaries else 0
