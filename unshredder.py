@@ -14,7 +14,6 @@ def unshred(path):
         width = reduce(lambda x, y: gcd(x, y), boundaries) if boundaries else 0
         threshold += 1
 
-    image = numpy.asarray(Image.open(path).convert('L'))
     num_shreds = image.shape[1]/width
     shred_index = range(num_shreds)
     shreds = [ (image[:,i*width],image[:,(i+1)*width-1]) for i in shred_index ]
@@ -26,12 +25,12 @@ def unshred(path):
             left = i - 1
             min_dist = numpy.Infinity
             index = 10
-            c1 = shreds[shred_ordering[left]][1]
             for right in shred_index:
                 if left == right:
                     continue
-                c2 = shreds[right][0]
-                d = numpy.linalg.norm(c1-c2)
+                if right in shred_ordering:
+                    continue
+                d = numpy.linalg.norm( shreds[right][0] - shreds[shred_ordering[left]][1] )
                 if d < min_dist:
                     min_dist = d
                     index = right
@@ -40,7 +39,6 @@ def unshred(path):
         
     for o in orderings:
         print len(o), o
-    return
 
     source_im = Image.open(path)
     unshredded = Image.new("RGBA", source_im.size)
