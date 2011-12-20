@@ -31,7 +31,6 @@ def argmin(x):
 def unshred(path):
     image = Image.open(path).convert('L')
     im_width,im_height = image.size
-    #print "w: %d, h: %d" % (im_width,im_height)
     pixels = list(image.getdata())
     rows = [ pixels[row_start:row_start+im_width] for row_start in range(0,len(pixels),im_width) ]
     cols = zip(*rows)
@@ -49,7 +48,6 @@ def unshred(path):
     bounds = [ (i*SHRED_WIDTH,(i+1)*SHRED_WIDTH-1) for i in shreds ]
 
     D = [ [ dist(cols[bounds[s2][1]],cols[bounds[s1][0]]) if s1 != s2 else float(sys.maxint) for s2 in shreds ] for s1 in shreds ]
-    #D = [ [ numpy.linalg.norm( numpy.asarray(cols[bounds[s2][1]]) - numpy.asarray(cols[bounds[s1][0]]) ) if s1 != s2 else numpy.Infinity for s2 in shreds ] for s1 in shreds ]
     successors = [ argmin(D[i]) for i in shreds ]
     walks = [ sequence(successors,start) for start in shreds ]
     new_order = max(walks)[1]
