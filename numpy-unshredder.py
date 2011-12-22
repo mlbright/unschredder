@@ -11,11 +11,12 @@ def sequence(conn, start):
     return len(seq), seq
 
 diff = numpy.diff([numpy.mean(column) for column in image.transpose()])
-threshold, width = 1, 0
+threshold, width = 0, 0
 while width < 5 and threshold < 255:
     boundaries = [index+1 for index, d in enumerate(diff) if d > threshold]
     width = reduce(lambda x, y: fractions.gcd(x, y), boundaries) if boundaries else 0
     threshold += 1
+    print "%d %d" % (width,threshold)
 
 shreds = range(image.shape[1] / width)
 bounds = [(image[:,width*shred], image[:,width*(shred+1)-1]) for shred in shreds]
